@@ -46,14 +46,14 @@ flowchart TD
         Admin["Admin / Developer"]
     end
 
-    ClientA -->|HTTP Request with x-api-key| EdgeFleet
-    ClientB -->|HTTP Request with Bearer Key| EdgeFleet
+    ClientA -->|"HTTP Request with x-api-key"| EdgeFleet
+    ClientB -->|"HTTP Request with Bearer Key"| EdgeFleet
     EdgeFleet --> SDK
-    SDK -->|1. Dynamic Key Validation & Rate Limit| D1
-    SDK -.->|2. Async Non-Blocking Telemetry (ctx.waitUntil)| LogsTable
-    Admin -->|Manage Keys & Inspect Logs| Dashboard
-    Dashboard -->|Direct / Edge Proxy Fetch| EdgeFleet
-    Dashboard -->|Query Stats & Keys| BackendWorker
+    SDK -->|"1. Dynamic Key Validation & Rate Limit"| D1
+    SDK -.->|"2. Async Non-Blocking Telemetry via ctx.waitUntil"| LogsTable
+    Admin -->|"Manage Keys & Inspect Logs"| Dashboard
+    Dashboard -->|"Direct / Edge Proxy Fetch"| EdgeFleet
+    Dashboard -->|"Query Stats & Keys"| BackendWorker
     BackendWorker --> D1
 ```
 
