@@ -213,10 +213,8 @@ export default function App() {
 
     if (svc === 'vidbunker') {
       url = 'https://vidbunker-resolver.shakir-ansarii075.workers.dev/api/extract';
-      method = 'POST';
+      method = 'GET';
       headers['x-api-key'] = key;
-      headers['Content-Type'] = 'application/json';
-      body = JSON.stringify({ url: 'https://vidbunker.to/e/sample-video' });
     } else if (svc === 'flezen') {
       url = 'https://flezen-resolver.shakir-ansarii075.workers.dev/api/extract?url=https://flezen.com/s/sample-video';
       method = 'GET';
@@ -228,22 +226,63 @@ export default function App() {
     }
 
     try {
-      const res = await authFetch(`${API_BASE}/api/proxy`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, method, headers, body })
-      });
-      const data = await res.json();
-      const duration = Math.round(performance.now() - startTime);
+      // Direct client fetch from browser: bypasses Cloudflare Worker-to-Worker (Error 1042) restriction
+      const fetchOptions = {
+        method,
+        headers
+      };
+      if (body && ['POST', 'PUT', 'PATCH'].includes(method)) {
+        fetchOptions.body = body;
+      }
 
-      const status = data.status || res.status;
-      const isSuccess = status >= 200 && status < 300;
+      let res, data;
+      try {
+        res = await fetch(url, fetchOptions);
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+      } catch (directErr) {
+        // Fallback to proxy only if direct browser call fails
+        const proxyRes = await authFetch(`${API_BASE}/api/proxy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, method, headers, body })
+        });
+        const proxyData = await proxyRes.json();
+        res = { status: proxyData.status || proxyRes.status, statusText: proxyData.statusText || proxyRes.statusText };
+        data = proxyData.data || proxyData;
+      }
+
+      const duration = Math.round(performance.now() - startTime);
+      const status = res.status;
+
+      // Key authentication check:
+      // Status 401: Invalid or Missing API key
+      // Status 403: Wrong service scope or expired key
+      // Any other status (200, 400, etc.) means the gateway successfully validated the key!
+      const isAuthRejected = status === 401 || status === 403;
+      const isSuccess = !isAuthRejected && status < 500;
+
+      let message = '';
+      if (isSuccess) {
+        message = `Successfully verified on ${svc} worker in ${duration}ms. Key is active and authorized.`;
+      } else if (status === 401) {
+        message = data?.error || 'Invalid or inactive API key.';
+      } else if (status === 403) {
+        message = data?.error || `API key not authorized for service '${svc}'.`;
+      } else {
+        message = data?.error || (typeof data === 'string' ? data : 'Worker returned an error.');
+      }
 
       setTestResult({
-        status,
-        statusText: data.statusText || (isSuccess ? 'OK' : 'Error'),
+        status: isSuccess ? 200 : status,
+        statusText: isSuccess ? 'OK' : (res.statusText || 'Unauthorized'),
         duration,
-        data: data.data || data,
+        data,
+        message,
         isSuccess,
         service: svc,
         keyUsed: key
@@ -258,9 +297,10 @@ export default function App() {
       const duration = Math.round(performance.now() - startTime);
       setTestResult({
         status: 500,
-        statusText: 'Network / Proxy Error',
+        statusText: 'Verification Error',
         duration,
         data: { error: err.message },
+        message: err.message,
         isSuccess: false,
         service: svc,
         keyUsed: key
@@ -874,7 +914,7 @@ export default function App() {
   if (!token) {
     return (
       <div className="min-h-screen bg-page text-fg flex items-center justify-center p-4">
-        <div className="max-w-sm w-full bg-surface/90 apple-glass border border-line rounded-panel p-6 space-y-5 shadow-2xl">
+        <div className="max-w-sm w-full bg-surface/90 apple-glass border border-line rounded-panel p-6 space-y-5 shadow-2xl apple-dialog">
           <div className="flex items-center gap-3 border-b border-line pb-4">
             <div className="h-9 w-9 rounded-control bg-accent flex items-center justify-center text-on-accent font-black text-sm">
               <Lock className="h-4 w-4" />
@@ -984,13 +1024,13 @@ export default function App() {
       {sidebarOpen && (
         <div 
           onClick={() => setSidebarOpen(false)} 
-          className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-black/40 z-30 md:hidden backdrop-blur-sm apple-backdrop transition-opacity"
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 shrink-0 border-r border-line bg-surface flex flex-col justify-between p-4 transition-all duration-200 ease-in-out
+        fixed inset-y-0 left-0 z-40 w-64 shrink-0 border-r border-line bg-surface/95 apple-glass flex flex-col justify-between p-4 transition-all duration-300 ease-apple-spring
         ${sidebarOpen ? 'translate-x-0 shadow-2xl opacity-100 visible' : '-translate-x-full opacity-0 invisible pointer-events-none'}
         md:static md:translate-x-0 md:opacity-100 md:visible md:pointer-events-auto md:shadow-none
       `}>
@@ -2267,11 +2307,11 @@ export default function App() {
       {/* Modal: Edit API Key */}
       {editingKey && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50 apple-backdrop"
           onClick={closeEditKey}
         >
           <div
-            className="bg-raised/95 apple-glass border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl"
+            className="bg-raised/95 apple-glass border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl apple-dialog"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -2398,8 +2438,8 @@ export default function App() {
 
       {/* Modal: Create API Key */}
       {showKeyModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-raised/95 apple-glass border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50 apple-backdrop">
+          <div className="bg-raised/95 apple-glass border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl apple-dialog">
             <h3 className="font-semibold text-base text-fg">Create new API key</h3>
 
             {createdKeyData ? (
