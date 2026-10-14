@@ -911,21 +911,34 @@ export default function App() {
     return (
       <div className="min-h-screen bg-page text-fg flex items-center justify-center p-4 relative overflow-hidden select-none">
         {/* React Bits Pro: Glyph Sonar Background */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 pointer-events-auto">
           <GlyphSonar
-            glyphs=" ·+×○◎◉"
-            color={activeColor}
+            colors={[activeColor, "#ffffff"]}
+            backgroundColor="#0a0a0c"
+            charset=" ·+×○◎◉"
             glyphSize={11}
-            spacing={1.15}
+            spacing={1.05}
             glyphWeight={1.0}
-            density={0.55}
-            scale={1.1}
-            drift={0.9}
-            driftAngle={22}
-            ambient={0.25}
+            density={0.5}
+            scale={1.0}
+            drift={1.0}
+            driftAngle={20}
+            ambient={0.35}
             autoPing={true}
-            interval={3.5}
-            persistence={0.75}
+            interval={3.4}
+            originX={0.5}
+            originY={0.5}
+            pingSpeed={1.0}
+            range={1.0}
+            ringWidth={1.0}
+            persistence={0.65}
+            reveal={0.5}
+            glow={0.25}
+            intensity={1.1}
+            interactive={true}
+            clickPing={true}
+            echo={true}
+            echoStrength={1.0}
           />
         </div>
 
@@ -1347,19 +1360,27 @@ export default function App() {
                 </div>
                 <div className="h-44 sm:h-52 w-full relative bg-[#08080a] overflow-hidden">
                   <GlyphSonar
-                    glyphs=" ·+×○◎◉"
-                    color={THEMES.find(t => t.id === theme)?.dot || '#a855f7'}
+                    colors={[THEMES.find(t => t.id === theme)?.dot || '#a855f7', '#ffffff']}
+                    backgroundColor="#08080a"
+                    charset=" ·+×○◎◉"
                     glyphSize={10}
-                    spacing={1.2}
+                    spacing={1.1}
                     glyphWeight={1.0}
-                    density={0.52}
-                    scale={1.2}
-                    drift={0.8}
+                    density={0.5}
+                    scale={1.0}
+                    drift={1.0}
                     driftAngle={20}
-                    ambient={0.22}
+                    ambient={0.35}
                     autoPing={true}
-                    interval={3.8}
-                    persistence={0.7}
+                    interval={3.4}
+                    persistence={0.65}
+                    reveal={0.5}
+                    glow={0.2}
+                    intensity={1.0}
+                    interactive={true}
+                    clickPing={true}
+                    echo={true}
+                    echoStrength={1.0}
                   />
                   <div className="absolute bottom-2.5 left-3 pointer-events-none text-[10px] font-mono text-fg-3/70 flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-success"></span>
