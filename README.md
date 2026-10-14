@@ -18,43 +18,22 @@
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Consumers & External Clients"]
-        ClientA["Web & Mobile Apps"]
-        ClientB["Third-Party Integrations"]
+    subgraph DataPlane["Data Plane (High-Throughput Edge)"]
+        Clients["API Consumers"] -->|"HTTP Request + API Key"| Fleet["Cloudflare Worker Fleet\n(Telemetric SDK)"]
     end
 
-    subgraph EdgeFleet["Cloudflare Workers Fleet"]
-        W1["Worker: auth-service"]
-        W2["Worker: media-streamer"]
-        W3["Worker: edge-webhook"]
-        SDK["Telemetric SDK (monitor.js)"]
+    subgraph Storage["Central Edge Storage"]
+        D1[("Cloudflare D1 Database\nKeys · Rate Limits · Telemetry Logs")]
     end
 
-    subgraph CloudflareData["Centralized Edge Persistence"]
-        D1[("Cloudflare D1 Database\napimonitor-db")]
-        KeysTable["api_keys (SHA-256)"]
-        LogsTable["request_logs (ctx.waitUntil)"]
-        RateTable["rate_limits (minute buckets)"]
-        D1 --- KeysTable
-        D1 --- LogsTable
-        D1 --- RateTable
+    subgraph ControlPlane["Control Plane (Management)"]
+        Admin["Developer / Admin"] --> Dashboard["Analytics Dashboard\n(Cloudflare Pages)"]
+        Dashboard --> BackendWorker["Admin API Worker"]
     end
 
-    subgraph Management["Control Plane"]
-        BackendWorker["apimonitor-server (Worker API)"]
-        Dashboard["apimonitor-dashboard (Cloudflare Pages)"]
-        Admin["Admin / Developer"]
-    end
-
-    ClientA -->|"HTTP Request with x-api-key"| EdgeFleet
-    ClientB -->|"HTTP Request with Bearer Key"| EdgeFleet
-    EdgeFleet --> SDK
-    SDK -->|"1. Dynamic Key Validation & Rate Limit"| D1
-    SDK -.->|"2. Async Non-Blocking Telemetry via ctx.waitUntil"| LogsTable
-    Admin -->|"Manage Keys & Inspect Logs"| Dashboard
-    Dashboard -->|"Direct / Edge Proxy Fetch"| EdgeFleet
-    Dashboard -->|"Query Stats & Keys"| BackendWorker
-    BackendWorker --> D1
+    Fleet -->|"1. Key Verification & Rate-Limit"| D1
+    Fleet -.->|"2. Zero-Latency Log (ctx.waitUntil)"| D1
+    BackendWorker -->|"Provision Keys & Query Analytics"| D1
 ```
 
 ---
