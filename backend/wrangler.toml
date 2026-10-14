@@ -1,0 +1,11 @@
+name = "apimonitor-server"
+main = "src/index.js"
+compatibility_date = "2024-04-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "apimonitor-db"
+database_id = "90f0bf49-0a2c-4460-8b68-99173c14f1a4"
+
+[vars]
+ADMIN_KEY = "admin_apimonitor_secret_key"
