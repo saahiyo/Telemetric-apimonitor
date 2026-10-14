@@ -43,6 +43,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { bind, play, setEnabled, unlock } from 'cuelume';
+import GlyphSonar from './components/GlyphSonar';
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 const STORAGE_AUTH_KEY = "apimonitor_admin_token";
@@ -906,9 +907,30 @@ export default function App() {
   // PASSCODE AUTHENTICATION SCREEN
   // -------------------------------------------------------------
   if (!token) {
+    const activeColor = THEMES.find(t => t.id === theme)?.dot || '#a855f7';
     return (
-      <div className="min-h-screen bg-page text-fg flex items-center justify-center p-4">
-        <div className="max-w-sm w-full bg-surface border border-line rounded-panel p-6 space-y-5 shadow-2xl apple-dialog">
+      <div className="min-h-screen bg-page text-fg flex items-center justify-center p-4 relative overflow-hidden select-none">
+        {/* React Bits Pro: Glyph Sonar Background */}
+        <div className="absolute inset-0 z-0">
+          <GlyphSonar
+            glyphs=" ·+×○◎◉"
+            color={activeColor}
+            glyphSize={11}
+            spacing={1.15}
+            glyphWeight={1.0}
+            density={0.55}
+            scale={1.1}
+            drift={0.9}
+            driftAngle={22}
+            ambient={0.25}
+            autoPing={true}
+            interval={3.5}
+            persistence={0.75}
+          />
+        </div>
+
+        {/* Floating frosted glass login card */}
+        <div className="relative z-10 max-w-sm w-full bg-surface/90 backdrop-blur-md border border-line rounded-panel p-6 space-y-5 shadow-2xl apple-dialog">
           <div className="flex items-center gap-3 border-b border-line pb-4">
             <div className="h-9 w-9 rounded-control bg-accent flex items-center justify-center text-on-accent font-black text-sm">
               <Lock className="h-4 w-4" />
@@ -1311,6 +1333,39 @@ export default function App() {
                   Processed <span className="font-semibold text-fg">{stats?.summary?.total_requests || 0} requests</span> across 3 worker services in the past {timeRange}.
                   Average response latency is <span className="font-semibold text-fg">{stats?.summary?.avg_latency || 0} ms</span> with <span className="font-semibold text-fg">{stats?.summary?.error_requests || 0} failed requests</span>.
                 </p>
+              </div>
+
+              {/* Interactive Edge Fleet Sonar Radar */}
+              <div className="bg-surface rounded-panel border border-line overflow-hidden space-y-0 relative shadow-sm">
+                <div className="px-4 py-2.5 border-b border-line flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-accent animate-pulse shrink-0"></span>
+                    <h3 className="text-sm font-semibold text-fg">Live Edge Fleet Sonar</h3>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-2 text-fg-3 font-mono">React Bits Pro</span>
+                  </div>
+                  <span className="text-xs text-fg-3 hidden sm:inline">Click field to trigger manual ping</span>
+                </div>
+                <div className="h-44 sm:h-52 w-full relative bg-[#08080a] overflow-hidden">
+                  <GlyphSonar
+                    glyphs=" ·+×○◎◉"
+                    color={THEMES.find(t => t.id === theme)?.dot || '#a855f7'}
+                    glyphSize={10}
+                    spacing={1.2}
+                    glyphWeight={1.0}
+                    density={0.52}
+                    scale={1.2}
+                    drift={0.8}
+                    driftAngle={20}
+                    ambient={0.22}
+                    autoPing={true}
+                    interval={3.8}
+                    persistence={0.7}
+                  />
+                  <div className="absolute bottom-2.5 left-3 pointer-events-none text-[10px] font-mono text-fg-3/70 flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success"></span>
+                    <span>Radar active • Drift simulation & telemetry echoes</span>
+                  </div>
+                </div>
               </div>
 
               {/* Workers Fleet Cards */}
