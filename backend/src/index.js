@@ -275,7 +275,8 @@ export default {
           .map((b) => b.toString(16).padStart(2, "0"))
           .join("");
 
-        const prefixTag = service === "vidbunker" ? "vb_" : service === "flezen" ? "flz_" : service === "social-mdown" ? "smd_" : "mon_";
+        const sanitizedSvc = String(service || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+        const prefixTag = sanitizedSvc && sanitizedSvc !== "all" ? `${sanitizedSvc.substring(0, 3)}_` : "mon_";
         const secretKey = `${prefixTag}${randomHex}`;
         const keyPrefix = secretKey.substring(0, 10);
         const keyHash = await sha256(secretKey);

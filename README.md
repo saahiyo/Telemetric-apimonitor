@@ -24,9 +24,9 @@ flowchart TD
     end
 
     subgraph EdgeFleet["Cloudflare Workers Fleet"]
-        W1["Worker: vidbunker-resolver"]
-        W2["Worker: flezen-resolver"]
-        W3["Worker: social-mdown"]
+        W1["Worker: auth-service"]
+        W2["Worker: media-streamer"]
+        W3["Worker: edge-webhook"]
         SDK["Telemetric SDK (monitor.js)"]
     end
 
@@ -66,7 +66,7 @@ Traditional API gateways introduce response latency while logging transactions. 
 
 ### 2. 🔑 Dynamic Edge API Key Management
 - **SHA-256 Hashing**: Raw secret keys are hashed with Web Crypto before storage; plain secrets are never exposed in queries.
-- **Fleet & Service Scoping**: Restrict keys to individual workers (e.g., `vb_` for VidBunker, `flz_` for Flezen, `smd_` for Social Media Downloader) or issue global (`all`) tokens.
+- **Fleet & Service Scoping**: Restrict keys to individual workers (e.g., `auth_` for Authentication, `med_` for Media Streamer, `hook_` for Webhooks) or issue global (`all`) tokens.
 - **Expirations & Instant Revocation**: Set 7-day, 30-day, 1-year, or custom validity windows. Revoke keys instantly with one click.
 
 ### 3. 🛡️ Per-Minute Edge Rate-Limiting
@@ -74,7 +74,7 @@ Atomic minute-bucket counters stored directly in Cloudflare D1 enforce rate limi
 
 ### 4. 🧪 Built-in API Playground & Edge Key Tester
 - **Cloudflare 1042 Loop-Bypass**: Solves Cloudflare's edge limitation preventing same-account worker-to-worker subrequests through intelligent dual-mode direct client routing and edge proxy fallback.
-- **Proactive Key Detection**: If a developer tests a `vb_*` key against a `social-mdown` endpoint, the tester detects the prefix mismatch and offers a 1-click test switch.
+- **Proactive Key Detection**: If a developer tests an `auth_*` key against a `media-streamer` endpoint, the tester detects the prefix mismatch and offers a 1-click test switch.
 
 ### 5. 🎨 Apple Human Interface Design Foundation
 - Clean, focused admin UI built with fluid typography, translucent acrylic backgrounds (`backdrop-blur`), and subtle border hierarchies.

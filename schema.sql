@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
   key_prefix TEXT NOT NULL,
   raw_key TEXT,                        -- Plaintext secret, legacy: dashboard copy-back only
   key_hash TEXT NOT NULL UNIQUE,
-  service TEXT NOT NULL DEFAULT 'all', -- 'all', 'vidbunker', 'flezen'
+  service TEXT NOT NULL DEFAULT 'all', -- 'all', 'auth-service', 'media-streamer'
   rate_limit_per_min INTEGER DEFAULT 60,
   is_active INTEGER NOT NULL DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -40,8 +40,8 @@ CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_minute);
 
 CREATE TABLE IF NOT EXISTS request_logs (
   id TEXT PRIMARY KEY,
-  service TEXT NOT NULL,               -- 'vidbunker', 'flezen', etc.
-  endpoint TEXT NOT NULL,              -- e.g. '/api/extract', '/api/stream'
+  service TEXT NOT NULL,               -- e.g. 'auth-service', 'media-streamer', etc.
+  endpoint TEXT NOT NULL,              -- e.g. '/api/verify', '/api/stream'
   method TEXT NOT NULL,                -- 'GET', 'POST', etc.
   status_code INTEGER NOT NULL,        -- 200, 401, 500, etc.
   latency_ms INTEGER NOT NULL,         -- Request duration in milliseconds
