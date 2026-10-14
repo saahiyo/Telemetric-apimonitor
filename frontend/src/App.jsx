@@ -49,6 +49,7 @@ const STORAGE_AUTH_KEY = "apimonitor_admin_token";
 const STORAGE_THEME_KEY = "apimonitor_theme";
 const STORAGE_MODE_KEY = "apimonitor_mode";
 const STORAGE_WELCOME_KEY = "telemetric_welcome_dismissed";
+const STORAGE_ADMIN_NAME_KEY = "telemetric_admin_name";
 
 const THEMES = [
   { id: 'violet', name: 'Linear Violet', dot: '#6366f1' },
@@ -125,6 +126,7 @@ export default function App() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
   const [welcomeDismissed, setWelcomeDismissed] = useState(() => localStorage.getItem(STORAGE_WELCOME_KEY) === "true");
+  const [adminName, setAdminName] = useState(() => localStorage.getItem(STORAGE_ADMIN_NAME_KEY) || 'Admin');
 
   const getAdminGreeting = () => {
     const hour = new Date().getHours();
@@ -1149,11 +1151,11 @@ export default function App() {
             }`}
           >
             <div className="h-7 w-7 rounded-full bg-accent text-on-accent font-bold text-xs flex items-center justify-center shrink-0">
-              CF
+              {(adminName?.trim() || 'Admin').substring(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-semibold text-fg leading-none truncate">Admin Console</span>
+                <span className="text-xs font-semibold text-fg leading-none truncate">{adminName?.trim() || 'Admin'} Console</span>
                 <span className="h-1.5 w-1.5 rounded-full bg-success shrink-0" title="Active"></span>
               </div>
               <p className="text-[10px] text-fg-3 truncate mt-0.5">Settings & Theme</p>
@@ -1286,25 +1288,11 @@ export default function App() {
               {!welcomeDismissed && (
                 <div className="p-3 sm:px-4 sm:py-3 rounded-panel bg-surface border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                   {/* Left: Greeting, role & live indicators */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-8 w-8 rounded-control bg-surface-2 border border-line flex items-center justify-center text-accent shrink-0">
-                      <Sparkles className="h-4 w-4" />
-                    </div>
+                  <div className="flex items-center min-w-0">
 
                     <div className="flex flex-wrap items-center gap-2 min-w-0">
                       <span className="font-semibold text-sm text-fg whitespace-nowrap">
-                        {getAdminGreeting()}, <span className="text-accent">Admin</span> 👋
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-2 text-fg-2 border border-line">
-                        <Shield className="h-2.5 w-2.5 text-accent" /> Administrator
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-success whitespace-nowrap">
-                        <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
-                        Fleet Live
-                      </span>
-                      <span className="hidden md:inline text-fg-3 text-xs">•</span>
-                      <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-fg-3 font-mono">
-                        <User className="h-3 w-3" /> admin@workers.dev
+                        {getAdminGreeting()}, <span className="text-accent">{adminName?.trim() || 'Admin'}</span> 👋
                       </span>
                       <span className="hidden lg:inline text-fg-3 text-xs">•</span>
                       <span className="hidden lg:inline-flex items-center gap-1 text-[11px] text-fg-3 font-mono">
@@ -2186,11 +2174,11 @@ export default function App() {
               <div className="bg-surface rounded-panel border border-line p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-accent text-on-accent font-bold text-xs flex items-center justify-center shrink-0">
-                    CF
+                    {(adminName?.trim() || 'Admin').substring(0, 2).toUpperCase()}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-fg">Admin Console</span>
+                      <span className="font-semibold text-sm text-fg">{adminName?.trim() || 'Admin'} Console</span>
                       <span className="h-1.5 w-1.5 rounded-full bg-success" title="Active"></span>
                     </div>
                     <span className="text-xs text-fg-3 font-mono">admin@workers.dev</span>
@@ -2211,7 +2199,29 @@ export default function App() {
 
               {/* Preferences Card */}
               <div className="bg-surface rounded-panel border border-line divide-y divide-line">
-                {/* 1. Theme Mode (Dark / Light) */}
+                {/* 1. Admin Display Name */}
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="font-medium text-fg block text-xs">Admin Display Name</span>
+                    <span className="text-[11px] text-fg-3">Change greeting name displayed in overview</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={adminName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setAdminName(val);
+                        localStorage.setItem(STORAGE_ADMIN_NAME_KEY, val);
+                      }}
+                      placeholder="Admin"
+                      maxLength={32}
+                      className="px-3 py-1.5 rounded-control bg-field border border-line text-xs text-fg focus:outline-none focus:border-accent-line focus:ring-1 focus:ring-accent transition w-full sm:w-48 font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Theme Mode (Dark / Light) */}
                 <div className="p-4 flex items-center justify-between">
                   <div>
                     <span className="font-medium text-fg block text-xs">Appearance Mode</span>
