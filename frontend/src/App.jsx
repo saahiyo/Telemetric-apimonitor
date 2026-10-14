@@ -967,41 +967,7 @@ export default function App() {
             </button>
           </form>
 
-          <div className="flex items-center justify-between pt-3 border-t border-line text-[11px] text-fg-3">
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={toggleMode}
-                data-cuelume-tap
-                data-cuelume-emphasis="subtle"
-                className="p-1 hover:text-fg rounded bg-surface-2 border border-line transition flex items-center gap-1 text-[10px] text-fg-2"
-                title={`Switch to ${mode === 'dark' ? 'Light' : 'Dark'} mode`}
-              >
-                {mode === 'dark' ? <Sun className="h-3 w-3 text-warn" /> : <Moon className="h-3 w-3 text-accent" />}
-                <span className="capitalize">{mode}</span>
-              </button>
-              <Palette className="h-3 w-3 text-accent ml-1" />
-              <span>Color</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {THEMES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => changeTheme(t.id)}
-                  className={`h-4 w-4 rounded-full transition-transform flex items-center justify-center ${
-                    theme === t.id ? 'ring-2 ring-accent scale-110' : 'opacity-60 hover:opacity-100 hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: t.dot }}
-                  title={t.name}
-                >
-                  {theme === t.id && <span className="h-1 w-1 rounded-full bg-white shadow-xs"></span>}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <p className="text-[11px] text-fg-3 text-center">
+          <p className="text-[11px] text-fg-3 text-center pt-1">
             Cloudflare Workers & D1 Telemetry Gateway
           </p>
         </div>
