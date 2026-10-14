@@ -60,6 +60,14 @@ const THEMES = [
   { id: 'lime', name: 'Acid Lime', dot: '#cad649' },
 ];
 
+const THEME_SONAR_COLORS = {
+  violet: ['#6366f1', '#c084fc'],  // Deep indigo shoals, electric violet waves
+  cyan:   ['#0284c7', '#38bdf8'],  // Deep cyan shoals, electric sky cyan waves
+  orange: ['#ea580c', '#fb923c'],  // Amber shoals, vibrant flame orange waves
+  emerald:['#047857', '#34d399'],  // Emerald shoals, neon mint green waves
+  lime:   ['#4d7c0f', '#bef264'],  // Rich olive-lime shoals, bright electric lime waves
+};
+
 const PLAYGROUND_PRESETS = [
   {
     name: 'Media API: Stream manifest',
@@ -646,14 +654,20 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ passcode }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(`Server returned HTTP ${res.status}: ${text || 'Empty response'}`);
+      }
       if (res.ok && data.success) {
         localStorage.setItem(STORAGE_AUTH_KEY, data.token);
         setToken(data.token);
         setPasscode('');
         play("success", { emphasis: "strong" });
       } else {
-        setAuthError(data.error || "Incorrect passcode");
+        setAuthError(data.error || `Incorrect passcode (status: ${res.status})`);
         play("error");
       }
     } catch (err) {
@@ -913,7 +927,7 @@ export default function App() {
         {/* React Bits Pro: Glyph Sonar Background */}
         <div className="absolute inset-0 z-0 pointer-events-auto">
           <GlyphSonar
-            colors={[activeColor, "#ffffff"]}
+            colors={THEME_SONAR_COLORS[theme] || THEME_SONAR_COLORS.violet}
             backgroundColor="#0a0a0c"
             charset=" ·+×○◎◉"
             glyphSize={11}
@@ -1348,46 +1362,6 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Interactive Edge Fleet Sonar Radar */}
-              <div className="bg-surface rounded-panel border border-line overflow-hidden space-y-0 relative shadow-sm">
-                <div className="px-4 py-2.5 border-b border-line flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-accent animate-pulse shrink-0"></span>
-                    <h3 className="text-sm font-semibold text-fg">Live Edge Fleet Sonar</h3>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-2 text-fg-3 font-mono">React Bits Pro</span>
-                  </div>
-                  <span className="text-xs text-fg-3 hidden sm:inline">Click field to trigger manual ping</span>
-                </div>
-                <div className="h-44 sm:h-52 w-full relative bg-[#08080a] overflow-hidden">
-                  <GlyphSonar
-                    colors={[THEMES.find(t => t.id === theme)?.dot || '#a855f7', '#ffffff']}
-                    backgroundColor="#08080a"
-                    charset=" ·+×○◎◉"
-                    glyphSize={10}
-                    spacing={1.1}
-                    glyphWeight={1.0}
-                    density={0.5}
-                    scale={1.0}
-                    drift={1.0}
-                    driftAngle={20}
-                    ambient={0.35}
-                    autoPing={true}
-                    interval={3.4}
-                    persistence={0.65}
-                    reveal={0.5}
-                    glow={0.2}
-                    intensity={1.0}
-                    interactive={true}
-                    clickPing={true}
-                    echo={true}
-                    echoStrength={1.0}
-                  />
-                  <div className="absolute bottom-2.5 left-3 pointer-events-none text-[10px] font-mono text-fg-3/70 flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success"></span>
-                    <span>Radar active • Drift simulation & telemetry echoes</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Workers Fleet Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

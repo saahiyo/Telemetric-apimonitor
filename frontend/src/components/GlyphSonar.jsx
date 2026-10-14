@@ -235,7 +235,7 @@ vec3 palette(float t) {
   vec3 deep = vec3(uLabA.x * 0.55, uLabA.yz * 0.85);
   vec3 top = uInk > 0.5
     ? vec3(uLabB.x * 0.72, uLabB.yz * 1.05)
-    : vec3(min(uLabB.x * 1.08 + 0.05, 0.99), uLabB.yz * 0.35);
+    : vec3(min(uLabB.x * 1.05, 0.98), uLabB.yz * 0.95);
   vec3 lab = t < 0.45 ? mix(deep, uLabA, smoothstep(0.0, 0.45, t))
     : t < 0.85 ? mix(uLabA, uLabB, smoothstep(0.45, 0.85, t))
     : mix(uLabB, top, smoothstep(0.85, 1.0, t));
@@ -329,8 +329,6 @@ void main() {
   if (uMode < 0.5) {
     vec3 light = (lines.rgb + bloom.rgb * uGlow) * uExposure;
     vec3 exposed = 1.0 - exp(-light);
-    float peak = max(exposed.r, max(exposed.g, exposed.b));
-    exposed = mix(exposed, vec3(peak), smoothstep(0.75, 1.0, peak) * 0.35);
     color = uBackground + (1.0 - uBackground) * exposed;
   } else {
     float energy = lines.a + bloom.a * uGlow * 0.2;
