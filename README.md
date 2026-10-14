@@ -1,6 +1,6 @@
-# ⚡ Telemetric
+# Telemetric
 
-> **Edge-Native API Observability, Dynamic Auth & Fleet Gateway for Cloudflare Workers.**
+> Self-hosted API key gateway, rate limiter, and zero-latency observability platform for Cloudflare Workers.
 
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Cloudflare D1](https://img.shields.io/badge/Cloudflare-D1_Database-F38020?style=flat-square&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
@@ -8,13 +8,71 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS_3.4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**Telemetric** is a centralized observability and API management platform built specifically for Cloudflare Workers. It provides dynamic API key authentication, per-minute edge rate limiting, and zero-latency asynchronous telemetry logging across multi-worker fleets — all backed by Cloudflare D1 (serverless SQLite at the edge) and an Apple-inspired desktop management dashboard.
+**Telemetric** gives you centralized API keys, edge rate-limiting, and request logging across your Cloudflare Workers without paying for external SaaS aggregators or adding latency to your endpoints.
 
-🔗 **Live Production Dashboard**: [https://apimonitor-dashboard.pages.dev](https://apimonitor-dashboard.pages.dev)
+Everything runs inside your own Cloudflare account on **Cloudflare D1** (serverless SQLite at the edge).
+
+[Live Demo Dashboard](https://apimonitor-dashboard.pages.dev) • [Quickstart](#quickstart) • [Architecture](#architecture)
 
 ---
 
-## 🏛 Architecture
+## 30-Second Integration
+
+Drop the portable middleware into any existing Cloudflare Worker:
+
+```javascript
+import { ApiMonitor } from "./monitor.js";
+
+export default {
+  async fetch(request, env, ctx) {
+    const startTime = Date.now();
+    const monitor = new ApiMonitor("my-service", env, ctx);
+
+    // 1. Authenticate with D1 & enforce rate limits
+    const auth = await monitor.authenticate(request);
+    if (!auth.ok) {
+      monitor.log(request, auth.status, Date.now() - startTime, null, auth.error);
+      return new Response(JSON.stringify({ error: auth.error }), { status: auth.status });
+    }
+
+    // 2. Run your worker's core business logic
+    const response = await handleRequest(request);
+
+    // 3. Log telemetry asynchronously (adds 0ms to response latency)
+    monitor.log(request, response, Date.now() - startTime, auth.keyData);
+    return response;
+  }
+};
+```
+
+---
+
+## Why Telemetric?
+
+Most API monitoring and key management tools either:
+- **Add response latency** by waiting for logs to write to an external database before returning the HTTP response.
+- **Cost money** through third-party SaaS vendors (Datadog, Axiom, BetterStack) once your request volume scales.
+- **Require external infrastructure** (Redis clusters, Kafka pipelines, managed Postgres).
+
+Telemetric solves this at the edge:
+1. **0ms Added Latency**: Uses Cloudflare's `ctx.waitUntil()` lifecycle hook. The client gets their response immediately; telemetry flushes to D1 in the background.
+2. **Runs on Cloudflare Free Tier**: 100,000 requests/day, 5M database reads/month, and 10GB storage at $0.
+3. **Fail-Open by Design**: If D1 is ever unreachable or rate-limited, logging gracefully degrades so your production APIs never fail.
+
+---
+
+## What's Included
+
+- **Zero-Latency Telemetry**: Records response status codes, execution duration (ms), client IPs, geolocation, endpoints, and key metadata without slowing down client requests.
+- **SHA-256 Hashed Keys**: Raw keys are generated client-side, salted, and stored exclusively as SHA-256 digests. Plaintext keys are never stored in queries or the database.
+- **Granular Key Scopes**: Restrict tokens to specific microservices (`auth_*`, `media_*`, `webhook_*`) or issue global (`all`) fleet keys with customizable expiration windows.
+- **Edge Rate Limiting**: Per-minute sliding bucket counters stored directly in D1 enforce rate limits (`429 Too Many Requests`). Expired buckets are pruned automatically.
+- **Interactive Key Tester & Playground**: Built-in HTTP workbench that tests endpoints directly in the browser, featuring automatic prefix-mismatch detection to switch target services in one click.
+- **Self-Hosted Management Dashboard**: Clean, responsive UI built with React 19 and Tailwind CSS featuring dark/light modes, live log filtering, and key CRUD.
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart TD
@@ -38,162 +96,70 @@ flowchart TD
 
 ---
 
-## ✨ Key Features
+## Quickstart
 
-### 1. 🚀 Zero-Latency Telemetry via `ctx.waitUntil()`
-Traditional API gateways introduce response latency while logging transactions. Telemetric leverages Cloudflare’s `ctx.waitUntil()` lifecycle hook to record status codes, duration (ms), client IPs, geolocation, endpoints, and key metadata in the background **after** the client response has already completed.
+Deploy your complete Telemetric stack on Cloudflare in under 5 minutes:
 
-### 2. 🔑 Dynamic Edge API Key Management
-- **SHA-256 Hashing**: Raw secret keys are hashed with Web Crypto before storage; plain secrets are never exposed in queries.
-- **Fleet & Service Scoping**: Restrict keys to individual workers (e.g., `auth_` for Authentication, `med_` for Media Streamer, `hook_` for Webhooks) or issue global (`all`) tokens.
-- **Expirations & Instant Revocation**: Set 7-day, 30-day, 1-year, or custom validity windows. Revoke keys instantly with one click.
-
-### 3. 🛡️ Per-Minute Edge Rate-Limiting
-Atomic minute-bucket counters stored directly in Cloudflare D1 enforce rate limits (`HTTP 429 Too Many Requests`). Historical rate-limit windows are automatically purged asynchronously to keep storage footprint minimal.
-
-### 4. 🧪 Built-in API Playground & Edge Key Tester
-- **Cloudflare 1042 Loop-Bypass**: Solves Cloudflare's edge limitation preventing same-account worker-to-worker subrequests through intelligent dual-mode direct client routing and edge proxy fallback.
-- **Proactive Key Detection**: If a developer tests an `auth_*` key against a `media-streamer` endpoint, the tester detects the prefix mismatch and offers a 1-click test switch.
-
-### 5. 🎨 Apple Human Interface Design Foundation
-- Clean, focused admin UI built with fluid typography, translucent acrylic backgrounds (`backdrop-blur`), and subtle border hierarchies.
-- **Multiple Theme Accents**: Choose between Linear Violet, Ocean Blue, Emerald Green, and Warm Amber.
-- **Dark & Light Modes**: High-contrast, meticulously calibrated color tokens with zero eye strain.
-- **Haptic Audio Feedback**: Tactile interaction sounds generated dynamically via the browser Web Audio API (with instant mute toggle).
-
----
-
-## 📁 Repository Structure
-
-```text
-├── backend/                  # Cloudflare Worker API server (Admin API & D1 queries)
-│   ├── src/index.js          # REST endpoints for stats, key CRUD, and logs
-│   ├── wrangler.toml         # Cloudflare Worker deployment configuration
-│   └── wrangler.toml.example # Sanitized template configuration
-├── frontend/                 # Management Dashboard (React 19, Vite, Tailwind CSS)
-│   ├── src/                  # App components, theme state, audio engine
-│   ├── .env.example          # Environment variable template
-│   └── vite.config.js        # Vite bundler configuration
-├── sdk/                      # Portable Worker Middleware SDK
-│   ├── monitor.js            # ApiMonitor middleware class
-│   └── README.md             # SDK standalone integration guide
-├── schema.sql                # Production D1 SQLite schema (tables, indexes)
-└── package.json              # Monorepo convenience scripts
-```
-
----
-
-## 🚀 Quickstart & Self-Hosting
-
-Deploy your own complete Telemetric stack on Cloudflare's **free tier** in under 10 minutes.
-
-### Prerequisites
-- Node.js 20+
-- A [Cloudflare](https://dash.cloudflare.com/) account
-- Cloudflare Wrangler CLI (`npm install -g wrangler`)
-
-### Step 1: Clone the repository
+### 1. Clone & Install
 ```bash
 git clone https://github.com/saahiyo/Telemetric-apimonitor.git
 cd Telemetric-apimonitor
 ```
 
-### Step 2: Create your Cloudflare D1 Database
+### 2. Create the D1 Database
 ```bash
-# 1. Login to Cloudflare
+# Authenticate with Cloudflare
 npx wrangler login
 
-# 2. Create the D1 database
+# Create your D1 instance
 npx wrangler d1 create apimonitor-db
 ```
-*Note down the `database_id` output by Wrangler.*
+*Copy the `database_id` output from Wrangler.*
 
-### Step 3: Initialize the Database Schema
-Execute the schema against your remote D1 database:
+### 3. Initialize the Schema
 ```bash
 npx wrangler d1 execute apimonitor-db --remote --file=./schema.sql
 ```
 
-### Step 4: Configure & Deploy the Backend Worker
-1. Copy the example configuration in `backend/`:
+### 4. Deploy the Backend Worker
+1. Copy the example configuration:
    ```bash
    cp backend/wrangler.toml.example backend/wrangler.toml
    ```
-2. Open `backend/wrangler.toml` and fill in:
-   - `database_id`: Your D1 database ID from Step 2.
-   - `ADMIN_KEY`: Your secret administrative passcode.
-3. Deploy the backend worker:
+2. Paste your `database_id` and set an `ADMIN_KEY` passcode inside `backend/wrangler.toml`.
+3. Deploy to Cloudflare Workers:
    ```bash
    npm run deploy:backend
    ```
-*Copy the deployed worker URL (e.g., `https://apimonitor-server.<your-subdomain>.workers.dev`).*
+*Copy your deployed Worker URL (e.g. `https://apimonitor-server.<your-subdomain>.workers.dev`).*
 
-### Step 5: Configure & Launch the Dashboard
-1. Set up the frontend environment variable:
-   ```bash
-   cd frontend
-   cp .env.example .env
-   ```
-   Add your deployed backend URL to `frontend/.env`:
-   ```env
-   VITE_API_BASE=https://apimonitor-server.<your-subdomain>.workers.dev
-   ```
-2. Run locally or deploy to Cloudflare Pages:
-   ```bash
-   # Local development:
-   npm install
-   npm run dev
+### 5. Launch the Dashboard
+```bash
+cd frontend
+cp .env.example .env
+```
+Set `VITE_API_BASE` in `frontend/.env` to your backend URL from Step 4.
 
-   # Deploy to Cloudflare Pages:
-   npm run build
-   npx wrangler pages deploy dist --project-name apimonitor-dashboard --branch main
-   ```
+```bash
+# Run locally:
+npm install
+npm run dev
 
----
-
-## 🔌 Integrating the SDK into Any Cloudflare Worker
-
-Connecting any worker in your fleet to Telemetric takes just **3 lines of code**:
-
-```javascript
-import { ApiMonitor } from "./monitor.js";
-
-export default {
-  async fetch(request, env, ctx) {
-    const startTime = Date.now();
-    const monitor = new ApiMonitor("my-service-name", env, ctx);
-
-    // 1. Authenticate with D1 dynamic keys & rate limits
-    const auth = await monitor.authenticate(request);
-    if (!auth.ok) {
-      monitor.log(request, auth.status, Date.now() - startTime, null, auth.error);
-      return new Response(JSON.stringify({ error: auth.error }), { status: auth.status });
-    }
-
-    // 2. Perform your API task
-    const response = await handleRequest(request);
-
-    // 3. Asynchronously record telemetry without adding latency
-    monitor.log(request, response, Date.now() - startTime, auth.keyData);
-    return response;
-  }
-};
+# Or deploy to Cloudflare Pages:
+npm run build
+npx wrangler pages deploy dist --project-name apimonitor-dashboard --branch main
 ```
 
 ---
 
-## 🔒 Security Architecture
+## Security
 
-- **Zero Plaintext Key Storage**: API keys are generated with `crypto.getRandomValues()`, salted by service scope prefix, and stored exclusively as SHA-256 digests.
-- **Fail-Open Safeguards**: In the event of temporary D1 rate-limiting or network partition, the SDK fails open on analytics logging to guarantee customer-facing APIs experience zero downtime.
-- **Admin Access Isolation**: Administrative API endpoints are strictly guarded by `x-admin-key` bearer token verification.
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
+- **Cryptographic Hashing**: API keys are hashed with Web Crypto (`SHA-256`) before D1 insertion. Compromising database read access does not reveal raw client secrets.
+- **Admin Isolation**: Administrative endpoints (metrics querying, key generation, revocation) require `x-admin-key` header verification.
+- **Fail-Open Telemetry**: If a database write encounters edge throttling, telemetry logging catches the exception and exits silently to protect consumer uptime.
 
 ---
 
-Developed by **[Shakir Ansari](https://github.com/saahiyo)** — Open for collaborations and contributions!
+## License
+
+MIT © [Shakir Ansari](https://github.com/saahiyo)
