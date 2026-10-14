@@ -272,7 +272,7 @@
     --ring: #059669;
   }
 
-  /* Light + Lime (design.how official Lime Light tokens) */
+  /* Light + Lime (Accessible High-Contrast Citron Lime) */
   [data-mode="light"][data-theme="lime"] {
     --page: #ffffff;
     --surface: #f6f5f2;
@@ -282,20 +282,20 @@
     --field: #f6f5f2;
     --fg: #0f0f0d;
     --fg-2: #4a4943;
-    --fg-3: #6b6a63;
+    --fg-3: #616059;
     --fg-disabled: #a6a49b;
     --fg-inverse: #ffffff;
     --line: #e6e4df;
     --line-strong: #cfcdc6;
     --control: #85827a;
     
-    --accent: #cad649;
-    --accent-hover: #bac534;
-    --accent-active: #a9b325;
-    --accent-wash: #f5f9c4;
-    --accent-line: #7c8700;
-    --on-accent: #0f0f0d;
-    --ring: #7c8700;
+    --accent: #476f08;
+    --accent-hover: #3c5e06;
+    --accent-active: #304c05;
+    --accent-wash: #eff6cb;
+    --accent-line: #476f08;
+    --on-accent: #ffffff;
+    --ring: #476f08;
   }
 
   body {
