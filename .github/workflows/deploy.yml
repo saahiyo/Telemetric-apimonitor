@@ -34,6 +34,8 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy frontend/dist --project-name=apimonitor-dashboard --branch=main
+        env:
+          WRANGLER_LOG: debug
 
   deploy-backend:
     name: Deploy Backend (Cloudflare Worker)
@@ -42,6 +44,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
@@ -49,3 +56,5 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: backend
           command: deploy
+        env:
+          WRANGLER_LOG: debug
