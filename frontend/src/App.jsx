@@ -1282,78 +1282,99 @@ export default function App() {
           {/* ============================================================== */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* ADMIN BAR (COMPACT & SIMPLE) */}
+              {/* APPLE-INSPIRED WELCOME & FLEET STATUS BANNER */}
               {!welcomeDismissed && (
-                <div className="p-3 sm:px-4 sm:py-3 rounded-panel bg-surface border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
-                  {/* Left: Greeting, role & live indicators */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-8 w-8 rounded-control bg-surface-2 border border-line flex items-center justify-center text-accent shrink-0">
-                      <Sparkles className="h-4 w-4" />
+                <div className="relative overflow-hidden rounded-panel bg-surface/80 apple-glass border border-line/80 p-4 sm:px-5 sm:py-4 shadow-sm transition-all duration-300">
+                  {/* Subtle top specular accent highlight */}
+                  <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-accent/30 to-transparent pointer-events-none" />
+
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    {/* Left: Greeting & Fleet Health Badges */}
+                    <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                      {/* Squircle Avatar with Accent Glow */}
+                      <div className="h-10 w-10 rounded-[12px] bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/25 flex items-center justify-center text-accent shadow-sm shrink-0">
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+
+                      <div className="space-y-1.5 min-w-0">
+                        {/* Title & Role */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="font-semibold text-sm sm:text-base text-fg tracking-tight">
+                            {getAdminGreeting()}, <span className="text-accent font-bold">Admin</span>
+                          </h2>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-accent-wash text-accent border border-accent/20">
+                            <Shield className="h-3 w-3" /> Administrator
+                          </span>
+                        </div>
+
+                        {/* Status Chips Row */}
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
+                          {/* Fleet Status */}
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-success/10 text-success text-[11px] font-medium border border-success/20">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+                            </span>
+                            <span>Fleet Live</span>
+                          </div>
+
+                          {/* Latency Metric */}
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-2/80 text-fg-2 text-[11px] font-mono border border-line">
+                            <Zap className="h-3 w-3 text-accent" />
+                            <span>{stats?.summary?.avg_latency ? `${stats.summary.avg_latency}ms` : '0ms'} avg</span>
+                          </div>
+
+                          {/* Email badge */}
+                          <div className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-2/80 text-fg-3 text-[11px] font-mono border border-line">
+                            <User className="h-3 w-3 text-fg-3" />
+                            <span>admin@workers.dev</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 min-w-0">
-                      <span className="font-semibold text-sm text-fg whitespace-nowrap">
-                        {getAdminGreeting()}, <span className="text-accent">Admin</span> 👋
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-2 text-fg-2 border border-line">
-                        <Shield className="h-2.5 w-2.5 text-accent" /> Administrator
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-success whitespace-nowrap">
-                        <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
-                        Fleet Live
-                      </span>
-                      <span className="hidden md:inline text-fg-3 text-xs">•</span>
-                      <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-fg-3 font-mono">
-                        <User className="h-3 w-3" /> admin@workers.dev
-                      </span>
-                      <span className="hidden lg:inline text-fg-3 text-xs">•</span>
-                      <span className="hidden lg:inline-flex items-center gap-1 text-[11px] text-fg-3 font-mono">
-                        <Zap className="h-3 w-3 text-accent" /> {stats?.summary?.avg_latency || 0}ms avg
-                      </span>
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-2 shrink-0 self-end lg:self-auto pt-2 lg:pt-0 border-t lg:border-t-0 border-line/50 w-full lg:w-auto justify-end">
+                      <button
+                        onClick={() => {
+                          selectTab('keys');
+                          setShowKeyModal(true);
+                          setCreatedKeyData(null);
+                          play("open");
+                        }}
+                        data-cuelume-tap
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-accent hover:bg-accent-hover text-on-accent text-xs font-semibold shadow-sm transition active:scale-[0.98]"
+                      >
+                        <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                        <span>Issue Key</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          selectTab('logs');
+                          play("tap");
+                        }}
+                        data-cuelume-tap
+                        data-cuelume-emphasis="subtle"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-surface-2/80 hover:bg-surface-3 text-fg border border-line text-xs font-medium transition active:scale-[0.98]"
+                      >
+                        <Terminal className="h-3.5 w-3.5 text-fg-3" />
+                        <span>Live Logs</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setWelcomeDismissed(true);
+                          localStorage.setItem(STORAGE_WELCOME_KEY, "true");
+                          play("close");
+                        }}
+                        className="h-7 w-7 rounded-full text-fg-3 hover:text-fg hover:bg-surface-2/80 flex items-center justify-center transition ml-1"
+                        title="Dismiss banner"
+                        aria-label="Dismiss banner"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     </div>
-                  </div>
-
-                  {/* Right: Quick actions */}
-                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                    <button
-                      onClick={() => {
-                        selectTab('keys');
-                        setShowKeyModal(true);
-                        setCreatedKeyData(null);
-                        play("open");
-                      }}
-                      data-cuelume-tap
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-control bg-accent hover:bg-accent-hover text-on-accent text-xs font-semibold shadow-sm transition"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      <span>Issue Key</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        selectTab('logs');
-                        play("tap");
-                      }}
-                      data-cuelume-tap
-                      data-cuelume-emphasis="subtle"
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-control bg-surface-2 hover:bg-surface-3 text-fg border border-line text-xs font-medium transition"
-                    >
-                      <Terminal className="h-3.5 w-3.5 text-fg-3" />
-                      <span>Live Logs</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setWelcomeDismissed(true);
-                        localStorage.setItem(STORAGE_WELCOME_KEY, "true");
-                        play("close");
-                      }}
-                      className="p-1 text-fg-3 hover:text-fg rounded-control hover:bg-surface-2 transition"
-                      title="Dismiss"
-                      aria-label="Dismiss bar"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
                   </div>
                 </div>
               )}
