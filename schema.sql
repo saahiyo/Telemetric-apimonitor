@@ -1,4 +1,13 @@
--- Cloudflare D1 Schema for API Monitor & Management
+-- ==============================================================================
+-- Telemetric — Cloudflare D1 Database Schema
+--
+-- Quickstart:
+-- 1. Create database:
+--    npx wrangler d1 create apimonitor-db
+--
+-- 2. Execute this schema remotely:
+--    npx wrangler d1 execute apimonitor-db --remote --file=./schema.sql
+-- ==============================================================================
 
 CREATE TABLE IF NOT EXISTS api_keys (
   id TEXT PRIMARY KEY,

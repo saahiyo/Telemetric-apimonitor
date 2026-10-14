@@ -1,0 +1,27 @@
+{
+  "name": "telemetric",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers API Observability, Dynamic Auth & Fleet Management Gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend",
+    "deploy:frontend": "npm run build --prefix frontend && npx wrangler pages deploy frontend/dist --project-name apimonitor-dashboard --branch main",
+    "deploy:backend": "npx wrangler deploy --config backend/wrangler.toml",
+    "db:init": "npx wrangler d1 execute apimonitor-db --remote --file=./schema.sql"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "cloudflare-d1",
+    "api-observability",
+    "api-gateway",
+    "telemetry",
+    "react",
+    "vite",
+    "tailwind"
+  ],
+  "author": "Shakir Ansari",
+  "license": "MIT"
+}

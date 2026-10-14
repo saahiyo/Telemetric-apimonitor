@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 import { bind, play, setEnabled, unlock } from 'cuelume';
 
-const API_BASE = "https://apimonitor-server.shakir-ansarii075.workers.dev";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://apimonitor-server.shakir-ansarii075.workers.dev";
 const STORAGE_AUTH_KEY = "apimonitor_admin_token";
 const STORAGE_THEME_KEY = "apimonitor_theme";
 const STORAGE_MODE_KEY = "apimonitor_mode";

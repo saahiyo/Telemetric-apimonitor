@@ -1,0 +1,14 @@
+name = "apimonitor-server"
+main = "src/index.js"
+compatibility_date = "2024-04-01"
+
+# Centralized Cloudflare D1 Database binding
+# Create your database via: npx wrangler d1 create apimonitor-db
+[[d1_databases]]
+binding = "DB"
+database_name = "apimonitor-db"
+database_id = "<YOUR_D1_DATABASE_ID>"
+
+[vars]
+# Secret administrative key used to access dashboard APIs & analytics
+ADMIN_KEY = "your_secure_admin_passcode_here"
