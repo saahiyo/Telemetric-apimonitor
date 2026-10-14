@@ -1662,176 +1662,175 @@ export default function App() {
           {activeTab === 'keys' && (
             <div className="space-y-4">
               <div className="bg-surface rounded-panel border border-line overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-fg min-w-[650px]">
-                    <thead className="bg-surface-2 text-fg-3 border-b border-line text-[11px] font-medium">
+                <table className="w-full text-left text-xs text-fg">
+                  <thead className="bg-surface-2 text-fg-3 border-b border-line text-[11px] font-medium">
+                    <tr>
+                      <th className="py-2.5 px-4">Key & Scope</th>
+                      <th className="py-2.5 px-4">Status & Expiry</th>
+                      <th className="py-2.5 px-4">Usage (24h)</th>
+                      <th className="py-2.5 px-4">Rate Limit & Activity</th>
+                      <th className="py-2.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {keys.length === 0 ? (
                       <tr>
-                        <th className="py-2.5 px-3 sm:px-4">Key name</th>
-                        <th className="py-2.5 px-3 sm:px-4">Prefix</th>
-                        <th className="py-2.5 px-3 sm:px-4">Scope</th>
-                        <th className="py-2.5 px-3 sm:px-4">Requests 1h / 24h / 7d</th>
-                        <th className="py-2.5 px-3 sm:px-4">Success 24h</th>
-                        <th className="py-2.5 px-3 sm:px-4">Lifetime</th>
-                        <th className="py-2.5 px-3 sm:px-4">Rate limit</th>
-                        <th className="py-2.5 px-3 sm:px-4">Expiration / Period</th>
-                        <th className="py-2.5 px-3 sm:px-4">Status</th>
-                        <th className="py-2.5 px-3 sm:px-4">Last used</th>
-                        <th className="py-2.5 px-3 sm:px-4">Created</th>
-                        <th className="py-2.5 px-3 sm:px-4 text-right">Action</th>
+                        <td colSpan={5} className="py-12 text-center text-fg-3">
+                          <Key className="h-8 w-8 mx-auto mb-2 opacity-40 text-accent" />
+                          <p className="font-semibold text-fg text-sm">No API keys generated</p>
+                          <p className="text-xs text-fg-3 mt-0.5 mb-3">Create your first client key to authenticate resolver requests.</p>
+                          <button
+                            data-cuelume-open
+                            onClick={() => { setShowKeyModal(true); setCreatedKeyData(null); }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-accent hover:bg-accent-hover text-on-accent text-xs font-semibold shadow-sm transition"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            <span>Create API key</span>
+                          </button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-line">
-                      {keys.map((k) => (
-                        <tr key={k.id} className="hover:bg-surface-2 transition">
-                          <td className="py-3 px-3 sm:px-4 font-semibold text-fg">
-                            {k.name}
-                          </td>
-                          <td className="py-3 px-3 sm:px-4">
-                            <button
-                              type="button"
-                              onClick={() => copyToClipboard(k.raw_key || k.key_prefix, k.id)}
-                              data-cuelume-tap
-                              data-cuelume-emphasis="subtle"
-                              className="inline-flex items-center gap-2 px-2.5 py-1 rounded-control bg-surface-2 hover:bg-surface-3 border border-line hover:border-accent-line transition text-xs font-mono group cursor-pointer"
-                              title="One-click copy API key to clipboard"
-                            >
-                              <span className="text-fg-2 group-hover:text-fg font-medium">
-                                {k.raw_key ? `${k.raw_key.substring(0, 10)}••••••••` : `${k.key_prefix}••••••••`}
-                              </span>
-                              {copiedKey === k.id || copiedKey === (k.raw_key || k.key_prefix) ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-sans font-semibold text-success">
-                                  <Check className="h-3.5 w-3.5 stroke-[2.5]" />
-                                  <span>Copied!</span>
+                    ) : (
+                      keys.map((k) => (
+                        <tr key={k.id} className="hover:bg-surface-2/60 transition">
+                          {/* 1. Key & Scope */}
+                          <td className="py-3 px-4">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-sm text-fg">{k.name}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-2 text-fg-2 border border-line capitalize">
+                                  {k.service}
                                 </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-sans text-fg-3 group-hover:text-accent transition">
-                                  <Copy className="h-3 w-3" />
-                                  <span>Copy</span>
-                                </span>
-                              )}
-                            </button>
-                          </td>
-                          <td className="py-3 px-3 sm:px-4 capitalize text-fg-2">
-                            {k.service}
-                          </td>
-                          <td className="py-3 px-3 sm:px-4 font-mono text-fg whitespace-nowrap">
-                            <span className={k.calls_1h ? 'text-fg font-medium' : 'text-fg-3'}>
-                              {k.calls_1h || 0}
-                            </span>
-                            <span className="text-fg-3"> / </span>
-                            <span className={k.calls_24h ? 'text-fg font-medium' : 'text-fg-3'}>
-                              {k.calls_24h || 0}
-                            </span>
-                            <span className="text-fg-3"> / </span>
-                            <span className={k.calls_7d ? 'text-fg font-medium' : 'text-fg-3'}>
-                              {k.calls_7d || 0}
-                            </span>
-                          </td>
-                          <td className="py-3 px-3 sm:px-4 font-mono whitespace-nowrap">
-                            {k.success_rate_24h === null || k.success_rate_24h === undefined ? (
-                              <span className="text-fg-3">—</span>
-                            ) : (
-                              <span
-                                className={
-                                  k.success_rate_24h >= 95
-                                    ? 'text-success-text'
-                                    : k.success_rate_24h >= 80
-                                    ? 'text-warn-text'
-                                    : 'text-danger-text'
-                                }
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(k.raw_key || k.key_prefix, k.id)}
+                                data-cuelume-tap
+                                data-cuelume-emphasis="subtle"
+                                className="inline-flex items-center gap-2 px-2 py-0.5 rounded-control bg-surface-2 hover:bg-surface-3 border border-line hover:border-accent-line transition text-xs font-mono group cursor-pointer"
+                                title="One-click copy API key to clipboard"
                               >
-                                {k.success_rate_24h}%
-                              </span>
-                            )}
-                            {k.avg_latency_24h ? (
-                              <span className="text-fg-3 ml-1.5">{k.avg_latency_24h}ms</span>
-                            ) : null}
+                                <span className="text-fg-2 group-hover:text-fg font-medium">
+                                  {k.raw_key ? `${k.raw_key.substring(0, 10)}••••••••` : `${k.key_prefix}••••••••`}
+                                </span>
+                                {copiedKey === k.id || copiedKey === (k.raw_key || k.key_prefix) ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-sans font-semibold text-success">
+                                    <Check className="h-3 w-3 stroke-[2.5]" />
+                                    <span>Copied!</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-sans text-fg-3 group-hover:text-accent transition">
+                                    <Copy className="h-2.5 w-2.5" />
+                                    <span>Copy</span>
+                                  </span>
+                                )}
+                              </button>
+                            </div>
                           </td>
-                          <td className="py-3 px-3 sm:px-4 font-mono text-fg-2">
-                            {k.total_calls || 0} reqs
+
+                          {/* 2. Status & Expiration */}
+                          <td className="py-3 px-4">
+                            <div className="space-y-1">
+                              <div>
+                                <button
+                                  onClick={() => handleToggleKey(k.id)}
+                                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium border transition ${
+                                    k.is_expired
+                                      ? 'bg-danger-tint text-danger-text border-line cursor-not-allowed'
+                                      : k.is_active 
+                                      ? 'bg-success-tint text-success-text border-line hover:opacity-85' 
+                                      : 'bg-surface-2 text-fg-disabled border-line hover:text-fg'
+                                  }`}
+                                  title={k.is_expired ? 'Key is expired' : k.is_active ? 'Click to disable' : 'Click to activate'}
+                                >
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <span className={`h-1.5 w-1.5 rounded-full ${k.is_expired ? 'bg-danger' : k.is_active ? 'bg-success' : 'bg-fg-disabled'}`}></span>
+                                    {k.is_expired ? 'Expired' : k.is_active ? 'Active' : 'Disabled'}
+                                  </span>
+                                </button>
+                              </div>
+                              <div className="text-[11px] text-fg-3">
+                                {k.is_expired ? (
+                                  <span className="text-danger-text">Expired {k.expires_at?.substring(0, 10)}</span>
+                                ) : k.expires_at ? (
+                                  <span>Expires {k.expires_at.substring(0, 10)}</span>
+                                ) : (
+                                  <span>Never expires</span>
+                                )}
+                              </div>
+                            </div>
                           </td>
-                          <td className="py-3 px-3 sm:px-4 text-fg-3 font-mono">
-                            {k.rate_limit_per_min} / min
+
+                          {/* 3. Usage (24h) */}
+                          <td className="py-3 px-4">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-semibold text-fg">{k.calls_24h || 0} reqs</span>
+                                {k.success_rate_24h !== null && k.success_rate_24h !== undefined ? (
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${
+                                    k.success_rate_24h >= 95
+                                      ? 'bg-success-tint text-success-text'
+                                      : k.success_rate_24h >= 80
+                                      ? 'bg-warn-tint text-warn-text'
+                                      : 'bg-danger-tint text-danger-text'
+                                  }`}>
+                                    {k.success_rate_24h}% ok
+                                  </span>
+                                ) : null}
+                              </div>
+                              <div className="text-[11px] text-fg-3 font-mono flex items-center gap-1.5">
+                                <span>{k.total_calls || 0} total</span>
+                                {k.avg_latency_24h ? (
+                                  <>
+                                    <span>•</span>
+                                    <span>{k.avg_latency_24h}ms avg</span>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
                           </td>
-                          <td className="py-3 px-3 sm:px-4 text-xs font-mono">
-                            {k.is_expired ? (
-                              <span className="px-1.5 py-0.5 rounded bg-danger-tint text-danger-text text-[11px] font-semibold">
-                                Expired ({k.expires_at?.substring(0, 10)})
-                              </span>
-                            ) : k.expires_at ? (
-                              <span className="text-fg-2 text-[11px]">
-                                Until {k.expires_at.substring(0, 10)}
-                              </span>
-                            ) : (
-                              <span className="text-fg-3 text-[11px]">Never</span>
-                            )}
+
+                          {/* 4. Rate Limit & Activity */}
+                          <td className="py-3 px-4">
+                            <div className="space-y-1">
+                              <div className="font-mono text-xs text-fg">
+                                <span className="font-medium">{k.rate_limit_per_min}</span> <span className="text-fg-3 text-[11px]">req/min</span>
+                              </div>
+                              <div className="text-[11px] text-fg-3 font-mono">
+                                {k.last_used_at ? `Used ${k.last_used_at.substring(5, 16)}` : 'Never used'}
+                              </div>
+                            </div>
                           </td>
-                          <td className="py-3 px-3 sm:px-4">
-                            <button
-                              onClick={() => handleToggleKey(k.id)}
-                              className={`px-2 py-0.5 rounded text-[11px] font-medium transition ${
-                                k.is_expired
-                                  ? 'bg-danger-tint text-danger-text cursor-not-allowed'
-                                  : k.is_active 
-                                  ? 'bg-success-tint text-success-text hover:opacity-80' 
-                                  : 'bg-surface-3 text-fg-disabled hover:text-fg'
-                              }`}
-                            >
-                              {k.is_expired ? 'Expired' : k.is_active ? 'Active' : 'Disabled'}
-                            </button>
-                          </td>
-                          <td className="py-3 px-3 sm:px-4 text-fg-3 font-mono text-[11px] whitespace-nowrap">
-                            {k.last_used_at ? k.last_used_at : 'Never'}
-                          </td>
-                          <td className="py-3 px-3 sm:px-4 text-fg-3 font-mono text-[11px] whitespace-nowrap">
-                            {k.created_at}
-                          </td>
-                          <td className="py-3 px-3 sm:px-4 text-right">
+
+                          {/* 5. Actions */}
+                          <td className="py-3 px-4 text-right">
                             <div className="flex items-center justify-end gap-1">
                               <button
                                 type="button"
                                 onClick={() => openEditKey(k)}
                                 data-cuelume-tap
                                 data-cuelume-emphasis="subtle"
-                                className="p-1.5 rounded text-fg-3 hover:text-accent hover:bg-surface-2 transition"
+                                className="p-1.5 rounded-control text-fg-3 hover:text-fg hover:bg-surface-2 transition"
                                 title={`Edit ${k.name}`}
                                 aria-label={`Edit ${k.name}`}
                               >
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
                               <button
-                                type="button"
-                                onClick={() => copyToClipboard(k.raw_key || k.key_prefix, k.id)}
-                                data-cuelume-tap
-                                data-cuelume-emphasis="subtle"
-                                className={`p-1.5 rounded transition ${
-                                  copiedKey === k.id || copiedKey === (k.raw_key || k.key_prefix)
-                                    ? 'bg-success-tint text-success-text' 
-                                    : 'text-fg-3 hover:text-accent hover:bg-surface-2'
-                                }`}
-                                title="One-click copy API key"
-                              >
-                                {copiedKey === k.id || copiedKey === (k.raw_key || k.key_prefix) ? (
-                                  <Check className="h-3.5 w-3.5 text-success stroke-[2.5]" />
-                                ) : (
-                                  <Copy className="h-3.5 w-3.5" />
-                                )}
-                              </button>
-                              <button
                                 onClick={() => handleDeleteKey(k.id)}
                                 data-cuelume-tap
-                                className="p-1.5 text-fg-3 hover:text-danger-text hover:bg-danger-tint rounded transition"
+                                className="p-1.5 text-fg-3 hover:text-danger-text hover:bg-danger-tint rounded-control transition"
                                 title="Delete key"
+                                aria-label="Delete key"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
