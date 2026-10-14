@@ -40,8 +40,12 @@ export default {
         'danger-text': 'var(--danger-text)',
       },
       borderRadius: {
-        panel: '14px',
+        panel: '16px',
         control: '10px',
+      },
+      transitionTimingFunction: {
+        'apple-spring': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'apple-press': 'cubic-bezier(0.2, 0, 0, 1)',
       }
     },
   },

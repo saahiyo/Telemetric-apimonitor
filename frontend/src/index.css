@@ -301,13 +301,48 @@
   body {
     background-color: var(--page);
     color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.012em;
     selection-background-color: var(--accent);
     selection-color: var(--on-accent);
     scrollbar-color: var(--control) transparent;
     scrollbar-width: thin;
+  }
+
+  /* Apple Typography: Optical tracking */
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.024em;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Apple Response: Instant pointer-down press feedback (kill latency) */
+  button, [role="button"], input[type="submit"], a {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled) {
+    transform: scale(0.975);
+    transition: transform 60ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Apple Materials: Frosted glass & specular top edge sheen */
+  .apple-glass {
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+  }
+
+  .rounded-panel {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  [data-mode="light"] .rounded-panel {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
   }
 
   * {
@@ -337,6 +372,27 @@
 
   ::-webkit-scrollbar-corner {
     background: transparent;
+  }
+}
+
+/* Apple Accessibility: Reduced motion & transparency */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled) {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .apple-glass, header, aside {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }
 

@@ -874,7 +874,7 @@ export default function App() {
   if (!token) {
     return (
       <div className="min-h-screen bg-page text-fg flex items-center justify-center p-4">
-        <div className="max-w-sm w-full bg-surface border border-line rounded-panel p-6 space-y-5 shadow-2xl">
+        <div className="max-w-sm w-full bg-surface/90 apple-glass border border-line rounded-panel p-6 space-y-5 shadow-2xl">
           <div className="flex items-center gap-3 border-b border-line pb-4">
             <div className="h-9 w-9 rounded-control bg-accent flex items-center justify-center text-on-accent font-black text-sm">
               <Lock className="h-4 w-4" />
@@ -1128,7 +1128,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="h-14 border-b border-line bg-page px-4 sm:px-6 flex items-center justify-between sticky top-0 z-10 shrink-0">
+        <header className="h-14 border-b border-line bg-page/80 apple-glass px-4 sm:px-6 flex items-center justify-between sticky top-0 z-10 shrink-0 transition-colors">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -2267,11 +2267,11 @@ export default function App() {
       {/* Modal: Edit API Key */}
       {editingKey && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50"
           onClick={closeEditKey}
         >
           <div
-            className="bg-raised border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-xl"
+            className="bg-raised/95 apple-glass border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -2398,8 +2398,8 @@ export default function App() {
 
       {/* Modal: Create API Key */}
       {showKeyModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-raised border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-xl">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-raised/95 apple-glass border border-line rounded-panel max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl">
             <h3 className="font-semibold text-base text-fg">Create new API key</h3>
 
             {createdKeyData ? (
