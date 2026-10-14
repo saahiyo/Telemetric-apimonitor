@@ -1242,97 +1242,78 @@ export default function App() {
           {/* ============================================================== */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* ADMIN WELCOME MESSAGE BAR */}
+              {/* ADMIN BAR (COMPACT & SIMPLE) */}
               {!welcomeDismissed && (
-                <div className="relative overflow-hidden rounded-panel border border-accent/20 bg-gradient-to-r from-surface via-surface to-accent-wash/30 p-4 sm:p-5 shadow-sm transition-all">
-                  {/* Subtle ambient lighting */}
-                  <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-accent/15 blur-2xl"></div>
-
-                  <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    {/* Left: Icon, greeting, role, fleet status */}
-                    <div className="flex items-start gap-3.5 min-w-0">
-                      <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-control bg-accent/10 border border-accent/25 flex items-center justify-center text-accent shrink-0 mt-0.5">
-                        <Sparkles className="h-5 w-5" />
-                      </div>
-
-                      <div className="space-y-1.5 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm sm:text-base font-semibold text-fg tracking-tight">
-                            {getAdminGreeting()}, <span className="text-accent">Admin</span> 👋
-                          </h3>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent-wash text-accent border border-accent/20">
-                            <Shield className="h-2.5 w-2.5" /> Administrator
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-success">
-                            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
-                            Fleet Live
-                          </span>
-                        </div>
-
-                        <p className="text-xs sm:text-sm text-fg-2 leading-relaxed">
-                          Welcome to your <span className="text-fg font-medium">Telemetric Admin Dashboard</span>. Real-time telemetry ingestion, Cloudflare D1 database pipelines, and worker fleet routing are fully operational.
-                        </p>
-
-                        {/* Status Pills */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-0.5 text-[11px] text-fg-3 font-mono">
-                          <span className="flex items-center gap-1.5">
-                            <User className="h-3 w-3 text-fg-3" />
-                            <span>admin@workers.dev</span>
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Server className="h-3 w-3 text-fg-3" />
-                            <span>2/2 Workers Monitored</span>
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Zap className="h-3 w-3 text-accent" />
-                            <span>Avg Latency: {stats?.summary?.avg_latency || 0}ms</span>
-                          </span>
-                        </div>
-                      </div>
+                <div className="p-3 sm:px-4 sm:py-3 rounded-panel bg-surface border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                  {/* Left: Greeting, role & live indicators */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-8 w-8 rounded-control bg-surface-2 border border-line flex items-center justify-center text-accent shrink-0">
+                      <Sparkles className="h-4 w-4" />
                     </div>
 
-                    {/* Right: Quick Admin Actions */}
-                    <div className="flex items-center gap-2 self-start md:self-center shrink-0 pt-1 md:pt-0">
-                      <button
-                        onClick={() => {
-                          selectTab('keys');
-                          setShowKeyModal(true);
-                          setCreatedKeyData(null);
-                          play("open");
-                        }}
-                        data-cuelume-tap
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-accent hover:bg-accent-hover text-on-accent text-xs font-semibold shadow-sm transition"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span>Issue Key</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          selectTab('logs');
-                          play("tap");
-                        }}
-                        data-cuelume-tap
-                        data-cuelume-emphasis="subtle"
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-surface-2 hover:bg-surface-3 text-fg border border-line text-xs font-medium transition"
-                      >
-                        <Terminal className="h-3.5 w-3.5 text-fg-3" />
-                        <span>Live Logs</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setWelcomeDismissed(true);
-                          localStorage.setItem(STORAGE_WELCOME_KEY, "true");
-                          play("close");
-                        }}
-                        className="p-1.5 text-fg-3 hover:text-fg rounded-control hover:bg-surface-2 transition ml-1"
-                        title="Dismiss welcome message"
-                        aria-label="Dismiss welcome message"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                      <span className="font-semibold text-sm text-fg whitespace-nowrap">
+                        {getAdminGreeting()}, <span className="text-accent">Admin</span> 👋
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-2 text-fg-2 border border-line">
+                        <Shield className="h-2.5 w-2.5 text-accent" /> Administrator
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-success whitespace-nowrap">
+                        <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
+                        Fleet Live
+                      </span>
+                      <span className="hidden md:inline text-fg-3 text-xs">•</span>
+                      <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-fg-3 font-mono">
+                        <User className="h-3 w-3" /> admin@workers.dev
+                      </span>
+                      <span className="hidden lg:inline text-fg-3 text-xs">•</span>
+                      <span className="hidden lg:inline-flex items-center gap-1 text-[11px] text-fg-3 font-mono">
+                        <Zap className="h-3 w-3 text-accent" /> {stats?.summary?.avg_latency || 0}ms avg
+                      </span>
                     </div>
+                  </div>
+
+                  {/* Right: Quick actions */}
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                    <button
+                      onClick={() => {
+                        selectTab('keys');
+                        setShowKeyModal(true);
+                        setCreatedKeyData(null);
+                        play("open");
+                      }}
+                      data-cuelume-tap
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-control bg-accent hover:bg-accent-hover text-on-accent text-xs font-semibold shadow-sm transition"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Issue Key</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        selectTab('logs');
+                        play("tap");
+                      }}
+                      data-cuelume-tap
+                      data-cuelume-emphasis="subtle"
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-control bg-surface-2 hover:bg-surface-3 text-fg border border-line text-xs font-medium transition"
+                    >
+                      <Terminal className="h-3.5 w-3.5 text-fg-3" />
+                      <span>Live Logs</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setWelcomeDismissed(true);
+                        localStorage.setItem(STORAGE_WELCOME_KEY, "true");
+                        play("close");
+                      }}
+                      className="p-1 text-fg-3 hover:text-fg rounded-control hover:bg-surface-2 transition"
+                      title="Dismiss"
+                      aria-label="Dismiss bar"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
               )}
