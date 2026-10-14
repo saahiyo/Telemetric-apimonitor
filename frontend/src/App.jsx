@@ -96,6 +96,25 @@ const PLAYGROUND_PRESETS = [
     headers: [{ key: 'Accept', value: 'application/json', enabled: true }]
   },
   {
+    name: 'Social MDown: Fetch media',
+    method: 'POST',
+    url: 'https://social-mdown.shakir-ansarii075.workers.dev/api/download',
+    body: '{\n  "url": "https://www.instagram.com/reel/DXeMIgEjRMY/?igsh=MWxzMTg3YnFoZWl5OA=="\n}',
+    authType: 'api_key',
+    headers: [
+      { key: 'Accept', value: 'application/json', enabled: true },
+      { key: 'Content-Type', value: 'application/json', enabled: true }
+    ]
+  },
+  {
+    name: 'Social MDown: Health status',
+    method: 'GET',
+    url: 'https://social-mdown.shakir-ansarii075.workers.dev/health',
+    body: '',
+    authType: 'none',
+    headers: [{ key: 'Accept', value: 'application/json', enabled: true }]
+  },
+  {
     name: 'Telemetry API: Stats',
     method: 'GET',
     url: 'https://apimonitor-server.shakir-ansarii075.workers.dev/api/stats?range=24h',
@@ -159,7 +178,8 @@ export default function App() {
   // Worker Health statuses
   const [workerHealth, setWorkerHealth] = useState({
     vidbunker: { status: 'checking', latency: 0 },
-    flezen: { status: 'checking', latency: 0 }
+    flezen: { status: 'checking', latency: 0 },
+    socialmdown: { status: 'checking', latency: 0 }
   });
 
   // API Testing Playground State
@@ -189,7 +209,7 @@ export default function App() {
   const handleSelectKeyForTest = (k) => {
     const rawVal = k.raw_key || k.key_prefix;
     setTestKey(rawVal);
-    if (k.service === 'vidbunker' || k.service === 'flezen') {
+    if (k.service === 'vidbunker' || k.service === 'flezen' || k.service === 'social-mdown') {
       setTestService(k.service);
     }
     play("tap", { emphasis: "subtle" });
@@ -219,6 +239,10 @@ export default function App() {
       headers['x-api-key'] = key;
     } else if (svc === 'flezen') {
       url = 'https://flezen-resolver.shakir-ansarii075.workers.dev/api/extract?url=https://flezen.com/s/sample-video';
+      method = 'GET';
+      headers['x-api-key'] = key;
+    } else if (svc === 'social-mdown') {
+      url = 'https://social-mdown.shakir-ansarii075.workers.dev/api/verify-key';
       method = 'GET';
       headers['x-api-key'] = key;
     } else {
@@ -323,7 +347,8 @@ export default function App() {
     if (preset.authType === 'api_key') {
       const isVb = preset.name?.toLowerCase().includes('vidbunker') || preset.url?.includes('vidbunker');
       const isFlz = preset.name?.toLowerCase().includes('flezen') || preset.url?.includes('flezen');
-      const targetService = isVb ? 'vidbunker' : isFlz ? 'flezen' : 'all';
+      const isSmd = preset.name?.toLowerCase().includes('social') || preset.url?.includes('social-mdown');
+      const targetService = isVb ? 'vidbunker' : isFlz ? 'flezen' : isSmd ? 'social-mdown' : 'all';
 
       // Auto-match an active key from user's keys if available
       const matching = keys.find(k => 
@@ -732,6 +757,22 @@ export default function App() {
       setWorkerHealth(prev => ({
         ...prev,
         flezen: { status: 'offline', latency: 0 }
+      }));
+    }
+
+    const t2 = performance.now();
+    try {
+      const r = await fetch("https://social-mdown.shakir-ansarii075.workers.dev/health");
+      const d = await r.json();
+      const dt = Math.round(performance.now() - t2);
+      setWorkerHealth(prev => ({
+        ...prev,
+        socialmdown: { status: r.ok ? 'online' : 'degraded', latency: dt, version: d.version }
+      }));
+    } catch {
+      setWorkerHealth(prev => ({
+        ...prev,
+        socialmdown: { status: 'offline', latency: 0 }
       }));
     }
   };
@@ -1350,13 +1391,13 @@ export default function App() {
               <div className="bg-surface rounded-panel border border-line p-4 sm:p-5">
                 <h3 className="text-sm font-semibold text-fg mb-1">Activity statement</h3>
                 <p className="text-xs sm:text-sm text-fg-2 leading-relaxed">
-                  Processed <span className="font-semibold text-fg">{stats?.summary?.total_requests || 0} requests</span> across 2 worker services in the past {timeRange}.
+                  Processed <span className="font-semibold text-fg">{stats?.summary?.total_requests || 0} requests</span> across 3 worker services in the past {timeRange}.
                   Average response latency is <span className="font-semibold text-fg">{stats?.summary?.avg_latency || 0} ms</span> with <span className="font-semibold text-fg">{stats?.summary?.error_requests || 0} failed requests</span>.
                 </p>
               </div>
 
               {/* Workers Fleet Cards */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="p-4 rounded-panel bg-surface border border-line space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
@@ -1405,6 +1446,32 @@ export default function App() {
                     <div>
                       <span className="text-fg-3 block text-[10px] sm:text-[11px]">Caching</span>
                       <span className="text-fg">Edge 1h</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-panel bg-surface border border-line space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`h-2 w-2 rounded-full shrink-0 ${workerHealth.socialmdown?.status === 'online' ? 'bg-success' : 'bg-warning'}`}></span>
+                      <h4 className="font-semibold text-sm text-fg truncate">social-mdown</h4>
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded bg-surface-2 text-fg-2 font-mono shrink-0">
+                      {workerHealth.socialmdown?.status || 'checking'} ({workerHealth.socialmdown?.latency || 0}ms)
+                    </span>
+                  </div>
+                  <div className="text-xs text-fg-3 grid grid-cols-3 gap-2 bg-surface-2 p-2.5 rounded-control text-center sm:text-left">
+                    <div>
+                      <span className="text-fg-3 block text-[10px] sm:text-[11px]">Route</span>
+                      <span className="text-fg font-mono truncate block">/api/download</span>
+                    </div>
+                    <div>
+                      <span className="text-fg-3 block text-[10px] sm:text-[11px]">Rate limits</span>
+                      <span className="text-accent font-medium">Enforced</span>
+                    </div>
+                    <div>
+                      <span className="text-fg-3 block text-[10px] sm:text-[11px]">Scope</span>
+                      <span className="text-fg">Multi-site</span>
                     </div>
                   </div>
                 </div>
@@ -1497,6 +1564,7 @@ export default function App() {
                     <option value="all">All workers</option>
                     <option value="vidbunker">vidbunker</option>
                     <option value="flezen">flezen</option>
+                    <option value="social-mdown">social-mdown</option>
                   </select>
 
                   <select
@@ -1839,7 +1907,7 @@ export default function App() {
           {/* TAB 4: WORKERS */}
           {/* ============================================================== */}
           {activeTab === 'workers' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 sm:p-5 rounded-panel bg-surface border border-line space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
@@ -1885,6 +1953,29 @@ export default function App() {
                   </div>
                 </div>
               </div>
+
+              <div className="p-4 sm:p-5 rounded-panel bg-surface border border-line space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`h-2 w-2 rounded-full shrink-0 ${workerHealth.socialmdown?.status === 'online' ? 'bg-success' : 'bg-warning'}`}></span>
+                    <h3 className="font-semibold text-fg text-sm truncate">social-mdown</h3>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded bg-surface-2 text-fg-2 shrink-0">v1.0.0</span>
+                </div>
+                <p className="text-xs text-fg-2 leading-relaxed">
+                  Universal social media downloader worker proxying Instagram Reels, TikTok, Twitter/X, and Facebook.
+                </p>
+                <div className="bg-surface-2 p-2.5 rounded-control text-xs font-mono space-y-1.5 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
+                    <span className="text-fg-3 shrink-0">Domain:</span>
+                    <span className="text-fg truncate">social-mdown.shakir-ansarii075.workers.dev</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-fg-3">Database:</span>
+                    <span className="text-success-text">apimonitor-db</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -1908,11 +1999,12 @@ export default function App() {
                 {/* 1. Target Service Selector */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-fg-2">1. Select Target Service</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { id: 'vidbunker', label: 'VidBunker', sub: 'vidbunker-resolver (vb_*)' },
-                      { id: 'flezen', label: 'Flezen', sub: 'flezen-resolver (flz_*)' },
-                      { id: 'telemetry', label: 'Telemetry API', sub: 'apimonitor-server (admin)' },
+                      { id: 'vidbunker', label: 'VidBunker', sub: 'vidbunker (vb_*)' },
+                      { id: 'flezen', label: 'Flezen', sub: 'flezen (flz_*)' },
+                      { id: 'social-mdown', label: 'Social MDown', sub: 'social-mdown (smd_*)' },
+                      { id: 'telemetry', label: 'Telemetry API', sub: 'apimonitor (admin)' },
                     ].map((s) => (
                       <button
                         key={s.id}
@@ -2043,7 +2135,7 @@ export default function App() {
                     {/* Proactive 1-Click Service Switch if prefix mismatch detected */}
                     {!testResult.isSuccess && testResult.status === 403 && (
                       (() => {
-                        const otherSvc = testResult.keyUsed.startsWith('flz_') ? 'flezen' : testResult.keyUsed.startsWith('vb_') ? 'vidbunker' : null;
+                        const otherSvc = testResult.keyUsed.startsWith('flz_') ? 'flezen' : testResult.keyUsed.startsWith('vb_') ? 'vidbunker' : testResult.keyUsed.startsWith('smd_') ? 'social-mdown' : null;
                         if (otherSvc && otherSvc !== testResult.service) {
                           return (
                             <div className="p-3 bg-surface-2 rounded-control border border-line text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -2525,6 +2617,7 @@ export default function App() {
                     <option value="all">All services</option>
                     <option value="vidbunker">Vidbunker resolver only</option>
                     <option value="flezen">Flezen resolver only</option>
+                    <option value="social-mdown">Social MDown downloader only</option>
                   </select>
                 </div>
 
